@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  get 'home/index'
+  get 'sample2' => 'sample2#index'
+  get 'sample1' => 'sample1#index'
+  get 'home' => 'home#index'
 
   resources :days
   resources :fees
