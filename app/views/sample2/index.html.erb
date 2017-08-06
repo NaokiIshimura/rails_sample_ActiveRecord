@@ -1,8 +1,77 @@
-<h1>Sample2#index</h1>
-<p>Find me in app/views/sample2/index.html.erb</p>
+<h1>N+1問題</h1>
 
 <hr>
 
 <h3>テーブル</h3>
 
-<%= image_tag 'sample2.png' %>
+<%= image_tag 'sample1.png' %>
+
+<br>
+
+<%= link_to 'address', addresses_path %>
+
+<table border="1">
+  <tr>
+    <th>id</th>
+    <th>state</th>
+  </tr>
+  <% @addresses.each do |a| %>
+      <tr>
+        <td><%= a.id %></td>
+        <td><%= a.state %></td>
+      </tr>
+  <% end %>
+</table>
+
+<br>
+
+<%= link_to 'fee', fees_path %>
+
+<table border="1">
+  <tr>
+    <th>id</th>
+    <th>fee</th>
+    <th>address_id</th>
+  </tr>
+  <% @fees.each do |f| %>
+      <tr>
+        <td><%= f.id %></td>
+        <td><%= f.fee %></td>
+        <td><%= f.address_id %></td>
+      </tr>
+  <% end %>
+</table>
+
+<hr>
+
+<h3>N+1問題が発生するクエリ</h3>
+
+<div class="module_code">ループ＋１回のクエリが発行される</div>
+<pre class="prettyprint">
+fees = Fee.all
+fees.each do |f|
+  f.address.state
+end
+=>
+  Fee Load (0.3ms)  SELECT "fees".* FROM "fees"
+  Address Load (0.1ms)  SELECT  "addresses".* FROM "addresses" WHERE "addresses"."id" = ? LIMIT ?  [["id", 1], ["LIMIT", 1]]
+  Address Load (0.1ms)  SELECT  "addresses".* FROM "addresses" WHERE "addresses"."id" = ? LIMIT ?  [["id", 2], ["LIMIT", 1]]
+  Address Load (0.1ms)  SELECT  "addresses".* FROM "addresses" WHERE "addresses"."id" = ? LIMIT ?  [["id", 3], ["LIMIT", 1]]
+  Address Load (0.1ms)  SELECT  "addresses".* FROM "addresses" WHERE "addresses"."id" = ? LIMIT ?  [["id", 4], ["LIMIT", 1]]
+  ...
+</pre>
+
+<hr>
+
+<h3>N+1問題が発生しないクエリ</h3>
+
+<div class="module_code">２つのクエリだけ発行される</div>
+<pre class="prettyprint">
+fees = Fee.all.includes(:address)
+fees.each do |f|
+  f.address.state
+end
+=>
+  CACHE (0.0ms)  SELECT "fees".* FROM "fees"
+  Address Load (0.2ms)  SELECT "addresses".* FROM "addresses" WHERE "addresses"."id" IN (1, 2, 3,4)
+</pre>
