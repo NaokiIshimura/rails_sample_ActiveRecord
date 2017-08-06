@@ -1,0 +1,127 @@
+<h1>Sample1#index</h1>
+<p>Find me in app/views/sample1/index.html.erb</p>
+
+<hr>
+
+<h3>テーブル</h3>
+
+<%= image_tag 'sample1.png' %>
+
+<br>
+
+<%= link_to 'address', addresses_path %>
+
+<table border="1">
+  <tr>
+    <th>id</th>
+    <th>state</th>
+  </tr>
+  <% @addresses.each do |a| %>
+      <tr>
+        <td><%= a.id %></td>
+        <td><%= a.state %></td>
+      </tr>
+  <% end %>
+</table>
+
+<br>
+
+<%= link_to 'fee', fees_path %>
+
+<table border="1">
+  <tr>
+    <th>id</th>
+    <th>fee</th>
+    <th>address_id</th>
+  </tr>
+  <% @fees.each do |f| %>
+      <tr>
+        <td><%= f.id %></td>
+        <td><%= f.fee %></td>
+        <td><%= f.address_id %></td>
+      </tr>
+  <% end %>
+</table>
+
+<br>
+
+<%= link_to 'day', days_path %>
+
+<table border="1">
+  <tr>
+    <th>id</th>
+    <th>state</th>
+    <th>transportation</th>
+    <th>day</th>
+  </tr>
+  <% @days.each do |d| %>
+      <tr>
+        <td><%= d.id %></td>
+        <td><%= d.state %></td>
+        <td><%= d.transportation %></td>
+        <td><%= d.day %></td>
+      </tr>
+  <% end %>
+</table>
+
+<hr>
+
+<h3>親の「主キー」と子の「親名_id」カラムで関連付ける</h3>
+
+<div class="module_code">model: address</div>
+<pre class="prettyprint">has_one :fee</pre>
+
+<div class="module_code">model: fee</div>
+<pre class="prettyprint">belongs_to :address</pre>
+
+<div class="module_code">controller: 基本的なjoin</div>
+<pre class="prettyprint">
+Fee.joins(:address).where("addresses.state = 'tokyo'")
+=>
+<%= @join1.inspect %>
+</pre>
+
+<hr>
+
+<h3>親の「主キー」と子の「親名_id」カラムで関連付けるが、別名でjoinさせる</h3>
+
+<div class="module_code">model: address</div>
+<pre class="prettyprint">has_one :fee</pre>
+
+<div class="module_code">model: fee</div>
+<pre class="prettyprint">belongs_to :addr, class_name: 'Address', foreign_key: 'address_id'</pre>
+
+<div class="module_code">controller: 別名でのjoin</div>
+<pre class="prettyprint">
+Fee.joins(:addr).where("addresses.state = 'tokyo'")
+=>
+<%= @join2.inspect %>
+</pre>
+
+<hr>
+
+<h3>親と子で共通するカラム同士で関連付ける</h3>
+
+<div class="module_code">model: address</div>
+<pre class="prettyprint">has_many :day, primary_key: 'state', foreign_key: 'state'</pre>
+
+<div class="module_code">model: day</div>
+<pre class="prettyprint">belongs_to :address, primary_key: 'state', foreign_key: 'state'</pre>
+
+<div class="module_code">controller: 基本的なjoin</div>
+<pre class="prettyprint">
+Day.joins(:address).where("addresses.state = 'tokyo'")
+=>
+<%= @join3.inspect %>
+</pre>
+
+<hr>
+
+<h3>補足</h3>
+
+<div class="module_code">controller: 親のカラムも取得したい場合</div>
+<pre class="prettyprint">
+Day.joins(:address).select("addresses.*, days.*").where("addresses.state = 'tokyo'")
+=>
+<%= @join4.inspect %>
+</pre>
